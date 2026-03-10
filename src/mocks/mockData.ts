@@ -1,0 +1,93 @@
+import { Book, User } from '../types';
+
+export const mockUser: User = {
+    id: 999,
+    firstName: "Demo",
+    lastName: "User",
+    email: "demo@kidshop.com",
+    role: "CUSTOMER",
+    active: true
+};
+
+export const mockBooks: Book[] = [
+    {
+        id: 1,
+        title: "Harry Potter and the Sorcerer's Stone",
+        author: "J.K. Rowling",
+        description: "A boy discovers he's a wizard and journeys to a magical school.",
+        price: 15.99,
+        isbn: "978-0590353403",
+        publisher: "Scholastic",
+        publicationDate: "1998-09-01",
+        pageCount: 309,
+        language: "English",
+        coverImageUrl: "/books/harry-potter.jpg",
+        category: "Fantasy",
+        ageGroup: "TEENS",
+        stockQuantity: 50,
+        active: true,
+        shop: { id: 1, name: "Demo Shop" },
+        createdAt: "2024-01-01T00:00:00Z",
+        updatedAt: "2024-01-01T00:00:00Z"
+    },
+    {
+        id: 2,
+        title: "Charlotte's Web",
+        author: "E.B. White",
+        description: "The classic story of a pig named Wilbur and his friend Charlotte the spider.",
+        price: 8.99,
+        isbn: "978-0064400558",
+        publisher: "HarperCollins",
+        publicationDate: "1952-10-15",
+        pageCount: 192,
+        language: "English",
+        coverImageUrl: "/books/charlotte.jpg",
+        category: "Classics",
+        ageGroup: "CHILDREN_8_12",
+        stockQuantity: 25,
+        active: true,
+        shop: { id: 1, name: "Demo Shop" },
+        createdAt: "2024-01-01T00:00:00Z",
+        updatedAt: "2024-01-01T00:00:00Z"
+    },
+    {
+        id: 3,
+        title: "Where the Wild Things Are",
+        author: "Maurice Sendak",
+        description: "Max, a mischievous boy, is sent to bed without his supper and sails to an island where imagination rules.",
+        price: 19.99,
+        isbn: "978-0060254926",
+        publisher: "HarperCollins",
+        publicationDate: "1963-04-09",
+        pageCount: 48,
+        language: "English",
+        coverImageUrl: "/books/where-wild.jpg",
+        category: "Picture Books",
+        ageGroup: "BABIES_TODDLERS",
+        stockQuantity: 100,
+        active: true,
+        shop: { id: 1, name: "Demo Shop" },
+        createdAt: "2024-01-01T00:00:00Z",
+        updatedAt: "2024-01-01T00:00:00Z"
+    },
+    {
+         id: 4,
+         title: "Peter Pan",
+         author: "J.M. Barrie",
+         description: "The adventures of a mischievous young boy who can fly and never grows up.",
+         price: 12.50,
+         isbn: "978-0141329819",
+         publisher: "Puffin Books",
+         publicationDate: "1911-01-01",
+         pageCount: 240,
+         language: "English",
+         coverImageUrl: "/books/peter-pan.jpg",
+         category: "Fantasy",
+         ageGroup: "CHILDREN_8_12",
+         stockQuantity: 40,
+         active: true,
+         shop: { id: 1, name: "Demo Shop" },
+         createdAt: "2024-01-01T00:00:00Z",
+         updatedAt: "2024-01-01T00:00:00Z"
+    }
+];
