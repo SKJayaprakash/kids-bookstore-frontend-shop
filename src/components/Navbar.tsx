@@ -166,10 +166,25 @@ export default function Navbar() {
 
                     {/* Shop Info Display */}
                     {isAuthenticated && shopName && (
-                        <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', ml: 2, mr: 1 }}>
+                        <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', ml: 2, mr: 1, gap: 1 }}>
                             <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.875rem' }}>
                                 <strong>{shopName}</strong>
                             </Typography>
+                            {import.meta.env.VITE_DEMO_MODE === 'true' && (
+                                <Box sx={{
+                                    bgcolor: 'warning.light',
+                                    color: 'warning.contrastText',
+                                    px: 1,
+                                    py: 0.25,
+                                    borderRadius: 1,
+                                    fontSize: '0.75rem',
+                                    fontWeight: 'bold',
+                                    border: '1px solid',
+                                    borderColor: 'warning.main'
+                                }}>
+                                    DEMO MODE
+                                </Box>
+                            )}
                         </Box>
                     )}
 

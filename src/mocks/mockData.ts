@@ -1,12 +1,10 @@
-import { Book, User } from '../types';
+import type { Book, User } from '../types';
 
 export const mockUser: User = {
     id: 999,
-    firstName: "Demo",
-    lastName: "User",
+    name: "Demo User",
     email: "demo@kidshop.com",
-    role: "CUSTOMER",
-    active: true
+    role: "CUSTOMER" as any // Bypassing strict UI checking for demo profile viewing
 };
 
 export const mockBooks: Book[] = [
@@ -16,19 +14,10 @@ export const mockBooks: Book[] = [
         author: "J.K. Rowling",
         description: "A boy discovers he's a wizard and journeys to a magical school.",
         price: 15.99,
-        isbn: "978-0590353403",
-        publisher: "Scholastic",
-        publicationDate: "1998-09-01",
-        pageCount: 309,
-        language: "English",
-        coverImageUrl: "/books/harry-potter.jpg",
+        stock: 50,
         category: "Fantasy",
-        ageGroup: "TEENS",
-        stockQuantity: 50,
-        active: true,
-        shop: { id: 1, name: "Demo Shop" },
-        createdAt: "2024-01-01T00:00:00Z",
-        updatedAt: "2024-01-01T00:00:00Z"
+        imageUrl: "/books/harry-potter.jpg",
+        ageGroup: "YOUNG_ADULT"
     },
     {
         id: 2,
@@ -36,19 +25,10 @@ export const mockBooks: Book[] = [
         author: "E.B. White",
         description: "The classic story of a pig named Wilbur and his friend Charlotte the spider.",
         price: 8.99,
-        isbn: "978-0064400558",
-        publisher: "HarperCollins",
-        publicationDate: "1952-10-15",
-        pageCount: 192,
-        language: "English",
-        coverImageUrl: "/books/charlotte.jpg",
+        stock: 25,
         category: "Classics",
-        ageGroup: "CHILDREN_8_12",
-        stockQuantity: 25,
-        active: true,
-        shop: { id: 1, name: "Demo Shop" },
-        createdAt: "2024-01-01T00:00:00Z",
-        updatedAt: "2024-01-01T00:00:00Z"
+        imageUrl: "/books/charlotte.jpg",
+        ageGroup: "MIDDLE_GRADE"
     },
     {
         id: 3,
@@ -56,38 +36,20 @@ export const mockBooks: Book[] = [
         author: "Maurice Sendak",
         description: "Max, a mischievous boy, is sent to bed without his supper and sails to an island where imagination rules.",
         price: 19.99,
-        isbn: "978-0060254926",
-        publisher: "HarperCollins",
-        publicationDate: "1963-04-09",
-        pageCount: 48,
-        language: "English",
-        coverImageUrl: "/books/where-wild.jpg",
+        stock: 100,
         category: "Picture Books",
-        ageGroup: "BABIES_TODDLERS",
-        stockQuantity: 100,
-        active: true,
-        shop: { id: 1, name: "Demo Shop" },
-        createdAt: "2024-01-01T00:00:00Z",
-        updatedAt: "2024-01-01T00:00:00Z"
+        imageUrl: "/books/where-wild.jpg",
+        ageGroup: "PRESCHOOL"
     },
     {
-         id: 4,
-         title: "Peter Pan",
-         author: "J.M. Barrie",
-         description: "The adventures of a mischievous young boy who can fly and never grows up.",
-         price: 12.50,
-         isbn: "978-0141329819",
-         publisher: "Puffin Books",
-         publicationDate: "1911-01-01",
-         pageCount: 240,
-         language: "English",
-         coverImageUrl: "/books/peter-pan.jpg",
-         category: "Fantasy",
-         ageGroup: "CHILDREN_8_12",
-         stockQuantity: 40,
-         active: true,
-         shop: { id: 1, name: "Demo Shop" },
-         createdAt: "2024-01-01T00:00:00Z",
-         updatedAt: "2024-01-01T00:00:00Z"
+        id: 4,
+        title: "Peter Pan",
+        author: "J.M. Barrie",
+        description: "The adventures of a mischievous young boy who can fly and never grows up.",
+        price: 12.50,
+        stock: 40,
+        category: "Fantasy",
+        imageUrl: "/books/peter-pan.jpg",
+        ageGroup: "MIDDLE_GRADE"
     }
 ];

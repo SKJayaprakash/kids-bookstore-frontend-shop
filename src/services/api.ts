@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { type AxiosResponse, type InternalAxiosRequestConfig } from 'axios';
 import { mockBooks, mockUser } from '../mocks/mockData';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
@@ -38,10 +38,18 @@ api.interceptors.response.use(
     }
 );
 
-// Demo Mode Helper for simulated network delay
-const simulateNetwork = <T>(data: T): Promise<{ data: T }> => {
+// Demo Mode Helper for simulated network delay returning Axios-compatible object
+const simulateNetwork = <T>(data: T): Promise<AxiosResponse<T>> => {
     return new Promise((resolve) => {
-        setTimeout(() => resolve({ data }), 300);
+        setTimeout(() => {
+            resolve({
+                data,
+                status: 200,
+                statusText: 'OK',
+                headers: {},
+                config: {} as InternalAxiosRequestConfig
+            });
+        }, 300);
     });
 };
 
