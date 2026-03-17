@@ -1,17 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
-import { createOrder, getAddresses } from '../services/api';
+import { createOrder, getAddresses, createPaymentOrder, verifyPayment } from '../services/api';
 import {
     Container, Paper, Typography, Grid, TextField, Button, Box, Stepper, Step, StepLabel,
-    Divider, Radio, RadioGroup, FormControlLabel, FormControl, FormLabel, Stack
+    Divider, Radio, RadioGroup, FormControlLabel, FormLabel, Stack
 } from '@mui/material';
-import { CreditCard, CheckCircle, LocalShipping, Payment } from '@mui/icons-material';
+import { CheckCircle, LocalShipping, Payment } from '@mui/icons-material';
 
-const steps = ['Shipping Address', 'Payment Details', 'Review Order'];
+const steps = ['Shipping Address', 'Payment Details'];
 
 export default function CheckoutPage() {
     const { items, totalPrice, clearCart } = useCart();
     const [activeStep, setActiveStep] = useState(0);
+    const [loading, setLoading] = useState(false);
     const [address, setAddress] = useState({ street: '', city: '', state: '', zipCode: '', country: '' });
     const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
     const [selectedAddressId, setSelectedAddressId] = useState<number>(0);
@@ -57,18 +58,69 @@ export default function CheckoutPage() {
     };
 
     const placeOrder = async () => {
+        setLoading(true);
         try {
             const orderItems = items.map(item => ({
                 bookId: item.book.id,
                 quantity: item.quantity
             }));
 
-            const response = await createOrder({ items: orderItems, address });
-            setOrderId(response.data.id);
-            clearCart();
+            // 1. Create Internal Order
+            const orderRes = await createOrder({ items: orderItems, address });
+            const internalOrderId = orderRes.data.id;
+
+            // 2. Create Razorpay Order via Backend
+            const paymentOrderRes = await createPaymentOrder(internalOrderId);
+            const rzpOrder = paymentOrderRes.data;
+
+            // 3. Open Razorpay Modal
+            const options = {
+                key: rzpOrder.keyId,
+                amount: rzpOrder.amount,
+                currency: rzpOrder.currency,
+                name: "Kids Bookstore",
+                description: `Order #${internalOrderId}`,
+                image: "https://upload.wikimedia.org/wikipedia/commons/8/89/Razorpay_logo.svg",
+                order_id: rzpOrder.id,
+                handler: async function (response: any) {
+                    // 4. Verify Payment on Backend
+                    const verifyRes = await verifyPayment({
+                        razorpay_payment_id: response.razorpay_payment_id,
+                        razorpay_order_id: response.razorpay_order_id,
+                        razorpay_signature: response.razorpay_signature,
+                        internal_order_id: internalOrderId
+                    });
+
+                    if (verifyRes.data.status === 'success') {
+                        setOrderId(internalOrderId);
+                        clearCart();
+                    } else {
+                        alert("Payment verification failed. Please contact support.");
+                    }
+                },
+                prefill: {
+                    name: "Customer",
+                    email: "customer@example.com",
+                    contact: "9999999999"
+                },
+                theme: {
+                    color: "#6366f1"
+                },
+                modal: {
+                    ondismiss: function() {
+                        setLoading(false);
+                    }
+                }
+            };
+
+            const rzp = new (window as any).Razorpay(options);
+            rzp.open();
+
         } catch (error) {
             console.error(error);
-            alert('Failed to place order');
+            alert('Failed to process order or payment');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -160,76 +212,34 @@ export default function CheckoutPage() {
                         )}
 
                         {activeStep === 1 && (
-                            <Box>
-                                <Typography variant="h6" gutterBottom display="flex" alignItems="center" gap={1}>
-                                    <Payment color="primary" /> Payment Method
+                            <Box sx={{ textAlign: 'center', py: 4 }}>
+                                <Typography variant="h6" gutterBottom display="flex" alignItems="center" justifyContent="center" gap={1}>
+                                    <Payment color="primary" /> Secure Payment
                                 </Typography>
-                                <FormControl component="fieldset" sx={{ mt: 2, width: '100%' }}>
-                                    <FormLabel component="legend">Select Payment Method</FormLabel>
-                                    <RadioGroup defaultValue="card">
-                                        <Paper variant="outlined" sx={{ mb: 2, p: 2, display: 'flex', alignItems: 'center' }}>
-                                            <FormControlLabel value="card" control={<Radio />} label="Credit / Debit Card" />
-                                            <CreditCard sx={{ ml: 'auto', color: 'text.secondary' }} />
-                                        </Paper>
-                                        <Paper variant="outlined" sx={{ p: 2 }}>
-                                            <FormControlLabel value="paypal" control={<Radio />} label="PayPal" />
-                                        </Paper>
-                                    </RadioGroup>
-                                </FormControl>
-
-                                <Box sx={{ mt: 4, bgcolor: 'grey.50', p: 2, borderRadius: 2 }}>
-                                    <Grid container spacing={2}>
-                                        <Grid size={{ xs: 12 }}>
-                                            <TextField label="Card Number" fullWidth placeholder="0000 0000 0000 0000" />
-                                        </Grid>
-                                        <Grid size={{ xs: 6 }}>
-                                            <TextField label="Expiry Order" fullWidth placeholder="MM/YY" />
-                                        </Grid>
-                                        <Grid size={{ xs: 6 }}>
-                                            <TextField label="CVV" fullWidth placeholder="123" />
-                                        </Grid>
-                                    </Grid>
-                                </Box>
-                            </Box>
-                        )}
-
-                        {activeStep === 2 && (
-                            <Box>
-                                <Typography variant="h6" gutterBottom>Review Your Order</Typography>
-                                <Stack spacing={2} sx={{ my: 2 }}>
-                                    {items.map(item => (
-                                        <Stack key={item.book.id} direction="row" justifyContent="space-between">
-                                            <Box>
-                                                <Typography variant="body1" fontWeight="bold">{item.book.title}</Typography>
-                                                <Typography variant="caption" color="text.secondary">Qty: {item.quantity}</Typography>
-                                            </Box>
-                                            <Typography variant="body1" fontWeight="bold">₹{(item.book.price * item.quantity).toFixed(2)}</Typography>
-                                        </Stack>
-                                    ))}
-                                </Stack>
-                                <Divider sx={{ my: 2 }} />
-                                <Stack direction="row" justifyContent="space-between">
-                                    <Typography variant="h6">Total</Typography>
-                                    <Typography variant="h6" fontWeight="bold" color="primary">₹{totalPrice.toFixed(2)}</Typography>
-                                </Stack>
-
-                                <Box sx={{ mt: 4 }}>
-                                    <Typography variant="subtitle2" gutterBottom>Shipping To:</Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        {address.street}, {address.city}, {address.state} {address.zipCode}, {address.country}
+                                <Box sx={{ my: 4 }}>
+                                    <img 
+                                        src="https://upload.wikimedia.org/wikipedia/commons/8/89/Razorpay_logo.svg" 
+                                        alt="Razorpay" 
+                                        style={{ height: 40, marginBottom: 16 }}
+                                    />
+                                    <Typography variant="body1" color="text.secondary">
+                                        You will be redirected to Razorpay's secure payment gateway to complete your transaction.
+                                    </Typography>
+                                    <Typography variant="caption" display="block" sx={{ mt: 2, color: 'text.muted' }}>
+                                        Supports UPI, Cards, Netbanking, and Wallets.
                                     </Typography>
                                 </Box>
                             </Box>
                         )}
 
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 4 }}>
-                            {activeStep !== 0 && (
+                            {!loading && activeStep !== 0 && (
                                 <Button onClick={handleBack} sx={{ mr: 1 }}>
                                     Back
                                 </Button>
                             )}
-                            <Button variant="contained" onClick={handleNext}>
-                                {activeStep === steps.length - 1 ? 'Place Order' : 'Next'}
+                            <Button variant="contained" onClick={handleNext} disabled={loading}>
+                                {loading ? 'Processing...' : (activeStep === steps.length - 1 ? 'Pay Now' : 'Next')}
                             </Button>
                         </Box>
                     </Paper>

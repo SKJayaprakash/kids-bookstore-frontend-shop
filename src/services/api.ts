@@ -17,11 +17,18 @@ api.interceptors.request.use((config) => {
         config.headers.Authorization = `Bearer ${token}`;
     }
     // Required for domain-based multi-tenant shop identification
-    const host = window.location.hostname;
-    if (host === 'localhost') {
-        config.headers['X-Shop-Domain'] = 'shop1.localhost'; // Default for local dev without subdomains
+    // Use VITE_SHOP_DOMAIN env var if set (for S3/CloudFront deployments),
+    // otherwise fall back to hostname-based detection (for local Docker dev)
+    const shopDomain = import.meta.env.VITE_SHOP_DOMAIN;
+    if (shopDomain) {
+        config.headers['X-Shop-Domain'] = shopDomain;
     } else {
-        config.headers['X-Shop-Domain'] = host;
+        const host = window.location.hostname;
+        if (host === 'localhost') {
+            config.headers['X-Shop-Domain'] = 'shop1.localhost';
+        } else {
+            config.headers['X-Shop-Domain'] = host;
+        }
     }
     return config;
 });
@@ -131,6 +138,14 @@ export const getOrders = () => {
 export const createOrder = (orderData: any) => {
     if (isDemoMode) return simulateNetwork({ id: Date.now(), status: "PENDING", ...orderData });
     return api.post('/orders', orderData);
+};
+
+export const createPaymentOrder = (orderId: number) => {
+    return api.post('/payments/create-order', { orderId });
+};
+
+export const verifyPayment = (paymentData: any) => {
+    return api.post('/payments/verify', paymentData);
 };
 
 export const deleteBook = (id: number) => {
